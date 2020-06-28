@@ -1,3 +1,3 @@
 # passwordStorage
 **Installation** 
-"sudo apt-get install libssl-dev"
+«`{bash} {sudo apt-get install libssl-dev}«`
