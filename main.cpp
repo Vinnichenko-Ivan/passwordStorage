@@ -11,7 +11,8 @@ using namespace std;
 
 int main()
 {
-	const unsigned char * d = new const unsigned char "red";
+
+	const unsigned char * d =  const unsigned char 100;
 	size_t n=16;
 	unsigned char md="";
 	MD5(d,n,md)
