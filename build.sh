@@ -2,7 +2,7 @@
 DIRSCRIPT=$(pwd)
 cd build/ 
 rm main
-cmake $DIRSCRIPT
+cmake $DIRSCRIPT 
 make
 ./main
 cd $DIRSCRIPT
