@@ -32,7 +32,7 @@ int main()
 	// MD5_Init(k);
 	unsigned char text[] = "Error";
 	const unsigned char * d =  text  ;
-	size_t n=5;
+	size_t n=6;
 	unsigned char md[n];
 	unsigned char *m=md;
 
