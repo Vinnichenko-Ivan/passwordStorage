@@ -30,9 +30,9 @@ int main()
 	// MD5_CTX * k=kl;
 
 	// MD5_Init(k);
-	unsigned char text[] = "Error";
+	unsigned char text[16] = "уrror";
 	const unsigned char * d =  text  ;
-	size_t n=6;
+	size_t n=16;
 	unsigned char md[n];
 	unsigned char *m=md;
 
