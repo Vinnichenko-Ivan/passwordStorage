@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/home/enigma/programming/passwordStorage")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/enigma/programming/passwordStorage/build")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/enigma/programming/passwordStorage/.gitignore/build")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)

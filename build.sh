@@ -1,8 +1,8 @@
 #!/bin/bash
 DIRSCRIPT=$(pwd)
-cd build/ 
+cd .gitignore/build/ 
 rm main
 cmake $DIRSCRIPT
 make
 ./main
-cd ..
+cd $DIRSCRIPT

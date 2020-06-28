@@ -1,3 +1,0 @@
-/home/enigma/programming/passwordStorage/build/CMakeFiles/rebuild_cache.dir
-/home/enigma/programming/passwordStorage/build/CMakeFiles/main.dir
-/home/enigma/programming/passwordStorage/build/CMakeFiles/edit_cache.dir
