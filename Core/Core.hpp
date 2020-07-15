@@ -264,6 +264,7 @@ void Core::save(std::string name)
 		saveFolder(fout,account.folders[i]);
 	}
 	fout<<"}"<<std::endl;
+	fout.close();
 }
 
 Folder Core::loadFolder(std::ifstream fin)
@@ -311,6 +312,10 @@ void Core::load(std::string name)
 		if(buff=="}")
 		{
 			break;
+		}
+		else if(buff=="Folder:")
+		{
+			buffAccount.addFolder(loadFolder(fin));
 		}
 	}
 	account=buffAccount;
