@@ -306,5 +306,12 @@ void Core::load(std::string name)
 	}
 	fin>>buff;
 	loadPresets(buff,buffAccount.presets);
-
+	while(fin >> buff)
+	{
+		if(buff=="}")
+		{
+			break;
+		}
+	}
+	account=buffAccount;
 }
