@@ -6,7 +6,7 @@ struct Folder
 	char name[16];
 	std::vector<Folder> folders;
 	std::vector<Password> passwords;
-	Presets preset;
+	Presets presets;
 	void addFolder(const Folder folder);
 };
 

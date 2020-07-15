@@ -1,19 +1,22 @@
 #include"Account.hpp"
-
+#include"Key.hpp"
 class Core
 {
 	protected:
 		Account account;
+		void copy();
 	public:
-		std::string logo();
-		std::string savePassword(Presets presets,Password password);
-		std::string savePresets(Presets presets);
 		Account read();
+		std::string logo();
+		std::string savePassword(Presets presets,Password password,Key key);
+		std::string savePresets(const Presets &presets);
+		Folder loadFolder(std::ifstream fin);
+		void loadPresets(std::string str,Presets &presets);
+		void loadPassword(std::string strAccountNameCrypt,std::string strSiteCrypt,std::string strPasswordCrypt,std::string strServiseNameCrypt,Password &password,const Presets &presets,Key key);
+		void saveFolder(std::ofstream &fout,const Folder &folder);
 		void write(Account in);
 		void load(std::string name);
 		void save(std::string name);
-		void printf(std::ofstream &fout,const Folder &folder);
-
 };
 
 Account Core::read()
@@ -21,14 +24,78 @@ Account Core::read()
 	return account;
 }
 
+void Core::copy()
+{
+
+}
+
 void Core::write(Account in)
 {
 	account=in;
 }
 
-std::string Core::savePresets(Presets presets)
+void Core::loadPresets(std::string str,Presets &presets)
 {
-	std::string buffString="";
+	if(str[0]!='0'&&str[0]!='1'||str[1]!='0'&&str[1]!='1'||str[2]!='0'&&str[2]!='1'||str[3]!='0'&&str[3]!='1'||str[4]!='0'&&str[4]!='1'||str.size()>21||str.size()<6)
+	{
+		std::cout<<"error 101"<<std::endl;
+	}
+	else
+	{
+		if(str[0]=='0')
+		{
+			presets.presetsOn=0;
+		}
+		else
+		{
+			presets.presetsOn=1;
+		}
+
+		if(str[1]=='0')
+		{
+			presets.siteName=0;
+		}
+		else
+		{
+			presets.siteName=1;
+		}
+
+		if(str[2]=='0')
+		{
+			presets.accountName=0;
+		}
+		else
+		{
+			presets.accountName=1;
+		}
+
+		if(str[3]=='0')
+		{
+			presets.password=0;
+		}
+		else
+		{
+			presets.password=1;
+		}
+
+		if(str[4]=='0')
+		{
+			presets.serviceName=0;
+		}
+		else
+		{
+			presets.serviceName=1;
+		}
+		for(int i=5;i<str.size();i++)
+		{
+			presets.typeCrypto[i-5]=str[i];
+		}
+	}
+}
+
+std::string Core::savePresets(const Presets &presets)
+{
+	std::string buffString="Presets: ";
 	if(presets.presetsOn)
 	{
 		buffString+="1";
@@ -73,9 +140,9 @@ std::string Core::savePresets(Presets presets)
 	return buffString;
 }
 
-std::string Core::savePassword(Presets presets,Password password)
+std::string Core::savePassword(Presets presets,Password password,Key key)
 {
-	std::string savingString="";
+	std::string savingString="PassType: ";
 	if(presets.siteName)
 	{
 
@@ -84,7 +151,7 @@ std::string Core::savePassword(Presets presets,Password password)
 	{
 		savingString+=password.site;
 	}
-	savingString+=":";
+	savingString+=" ";
 	if(presets.accountName)
 	{
 
@@ -93,7 +160,7 @@ std::string Core::savePassword(Presets presets,Password password)
 	{
 		savingString+=password.nameAccount;
 	}
-	savingString+=":";
+	savingString+=" ";
 	if(presets.password)
 	{
 
@@ -102,30 +169,86 @@ std::string Core::savePassword(Presets presets,Password password)
 	{
 		savingString+=password.password;
 	}
-	savingString+=":";
+	savingString+=" ";
 	if(presets.serviceName)
 	{
 
 	}
 	else
 	{
-		savingString+=password.serviceName;
+		savingString+=password  .serviceName;
 	}
 	return savingString;
 }
 
-void Core::printf(std::ofstream &fout,const Folder &folder)
+void loadPassword(std::string strAccountNameCrypt,std::string strSiteCrypt,std::string strPasswordCrypt,std::string strServiseNameCrypt,Password &password,const Presets &presets,Key key)
 {
-	fout<<folder.name<<std::endl;
-	fout<<savePresets(folder.preset)<<std::endl;
+	char strAccountName[16];
+	char strSite[16];
+	char strPassword[16];
+	char strServiseName[16];
+	int counter=0,count=0;
+	std::copy(strAccountNameCrypt.begin(),strAccountNameCrypt.end(),strAccountName);
+	std::copy(strSiteCrypt.begin(),strSiteCrypt.end(),strSite);
+	std::copy(strPasswordCrypt.begin(),strPasswordCrypt.end(),strPassword);
+	std::copy(strServiseNameCrypt.begin(),strServiseNameCrypt.end(),strServiseName);
+	if(strAccountNameCrypt.size()>16||strSiteCrypt.size()>16||strPasswordCrypt.size()>16||strServiseNameCrypt.size()>16)
+	{
+		std::cout<<"error 102";
+	}
+	else
+	{
+		if(presets.siteName)
+		{
+
+		}
+		else
+		{
+			strcpy(password.site,strSite);
+		}
+
+		if(presets.accountName)
+		{
+
+		}
+		else
+		{
+			strcpy(password.nameAccount,strAccountName);
+		}
+
+		if(presets.password)
+		{
+
+		}
+		else
+		{
+			strcpy(password.password,strPassword);
+		}
+
+		if(presets.serviceName)
+		{
+
+		}
+		else
+		{
+			strcpy(password.serviceName,strServiseName);
+		}
+	}
+}
+
+void Core::saveFolder(std::ofstream &fout,const Folder &folder)
+{
+	Key key;
+	fout<<"Folder: "<<folder.name<<std::endl;
+	fout<<savePresets(folder.presets)<<std::endl;
 	fout<<"{"<<std::endl;
 	for(int i=0;i<folder.passwords.size();i++)
 	{
-		fout<<savePassword(folder.preset,folder.passwords[i])<<std::endl;
+		fout<<savePassword(folder.presets,folder.passwords[i],key)<<std::endl;
 	}
 	for(int i=0;i<folder.folders.size();i++)
 	{
-		printf(fout,folder.folders[i]);
+		saveFolder(fout,folder.folders[i]);
 	}
 	fout<<"}"<<std::endl;
 }
@@ -138,8 +261,50 @@ void Core::save(std::string name)
 	fout<<"{"<<std::endl;
 	for(int i=0;i<account.folders.size();i++)
 	{
-		printf(fout,account.folders[i]);
+		saveFolder(fout,account.folders[i]);
 	}
 	fout<<"}"<<std::endl;
 }
 
+Folder Core::loadFolder(std::ifstream fin)
+{
+	Folder folder;
+	std::string buff;
+	fin>>buff;
+	if(buff.size()>16)
+	{
+		std::cout<<"error 105";
+	}
+	fin>>buff;
+	if(buff!="Presets:")
+	{
+		std::cout<<"error 106";
+	}
+	fin>>buff;
+	loadPresets(buff,folder.presets);
+}
+
+void Core::load(std::string name)
+{
+	Account buffAccount;
+	std::ifstream fin(name);
+	std::string buff;
+	fin>>buff;
+	if(buff.size()>16)
+	{
+		std::cout<<"error 103";
+	}
+	else
+	{
+		std::copy(buff.begin(),buff.end(),buffAccount.name);
+	}
+	fin>>buff;
+	fin>>buff;
+	if(buff!="Presets:")
+	{
+		std::cout<<"error 104";
+	}
+	fin>>buff;
+	loadPresets(buff,buffAccount.presets);
+
+}
