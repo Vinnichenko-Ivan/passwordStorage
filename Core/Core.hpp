@@ -11,6 +11,7 @@ class Core
 		std::string savePassword(Presets presets,Password password,Key key);
 		std::string savePresets(const Presets &presets);
 		Password loadPassword(std::ifstream &fin, Presets &presets,Key &key);
+		Password loadPasswordNew(std::ifstream &fin, Presets &presets,Key &key);
 		Folder loadFolder(std::ifstream &fin);
 		void loadPresets(std::string str,Presets &presets);
 		void saveFolder(std::ofstream &fout,const Folder &folder);
@@ -176,7 +177,7 @@ std::string Core::savePassword(Presets presets,Password password,Key key)
 	}
 	else
 	{
-		savingString+=password  .serviceName;
+		savingString+=password.serviceName;
 	}
 	return savingString;
 }
