@@ -13,7 +13,6 @@
 #include "Core/Core.hpp"
 
 Core core;
-
 int main()
 {
 	// Account account;
