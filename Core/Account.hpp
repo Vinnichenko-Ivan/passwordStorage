@@ -2,7 +2,7 @@
 
 struct Account
 {
-	char name[16];
+	char name[16]={0};
     char typeCrypto;
     std::vector<Folder> folders;
     Presets presets;

@@ -11,14 +11,26 @@ class Core
 		std::string savePassword(Presets presets,Password password,Key key);
 		std::string savePresets(const Presets &presets);
 		Password loadPassword(std::ifstream &fin, Presets &presets,Key &key);
-		Password loadPasswordNew(std::ifstream &fin, Presets &presets,Key &key);
 		Folder loadFolder(std::ifstream &fin);
 		void loadPresets(std::string str,Presets &presets);
 		void saveFolder(std::ofstream &fout,const Folder &folder);
 		void write(Account in);
 		void load(std::string name);
 		void save(std::string name);
+		void CScopy(char *a,std::string &b);
 };
+
+void Core::CScopy(char *a,std::string &b)
+{
+	for(int i=0;i<16;i++)
+	{
+		if(a[i]==0)
+		{
+			break;
+		}
+		b+=a[i];
+	}
+}
 
 Account Core::read()
 {
@@ -143,6 +155,7 @@ std::string Core::savePresets(const Presets &presets)
 
 std::string Core::savePassword(Presets presets,Password password,Key key)
 {
+	std::string buff;
 	std::string savingString="PassType: ";
 	if(presets.siteName)
 	{
@@ -177,20 +190,20 @@ std::string Core::savePassword(Presets presets,Password password,Key key)
 	}
 	else
 	{
-		savingString+=password.serviceName;
+		savingString+=password  .serviceName;
 	}
 	return savingString;
 }
 
-Password loadPassword(std::ifstream &fin, Presets &presets,Key &key)
+Password Core::loadPassword(std::ifstream &fin, Presets &presets,Key &key)
 {
 	std::string strAccountNameCrypt,strSiteCrypt, strPasswordCrypt, strServiseNameCrypt;
 	fin>>strSiteCrypt>>strAccountNameCrypt>>strPasswordCrypt>>strServiseNameCrypt;
 	Password password;
-	char strAccountName[16];
-	char strSite[16];
-	char strPassword[16];
-	char strServiseName[16];
+	char strAccountName[16]={};
+	char strSite[16]={};
+	char strPassword[16]={};
+	char strServiseName[16]={};
 	int counter=0,count=0;
 
 	if(strAccountNameCrypt.size()>16||strSiteCrypt.size()>16||strPasswordCrypt.size()>16||strServiseNameCrypt.size()>16)
@@ -276,7 +289,6 @@ void Core::save(std::string name)
 Folder Core::loadFolder(std::ifstream &fin)
 {
 	Key key;
-	
 	Folder folder;
 	std::string buff;
 	fin>>buff;
@@ -284,6 +296,7 @@ Folder Core::loadFolder(std::ifstream &fin)
 	{
 		std::cout<<"error 105";
 	}
+	std::copy(buff.begin(),buff.end(),folder.name);
 	fin>>buff;
 	if(buff!="Presets:")
 	{
@@ -304,9 +317,7 @@ Folder Core::loadFolder(std::ifstream &fin)
 		}
 		else if(buff=="PassType:")
 		{
-			Password password=loadPassword(fin,folder.presets,key);
-			
-			//folder.passwords.push_back(loadPassword(strAccountNameCrypt, strSiteCrypt, strPasswordCrypt,strServiseNameCrypt,folder.presets,key));
+			folder.passwords.push_back(loadPassword(fin,folder.presets,key));
 		}
 		else
 		{
@@ -331,13 +342,13 @@ void Core::load(std::string name)
 		std::copy(buff.begin(),buff.end(),buffAccount.name);
 	}
 	fin>>buff;
-	fin>>buff;
 	if(buff!="Presets:")
 	{
 		std::cout<<"error 104";
 	}
 	fin>>buff;
 	loadPresets(buff,buffAccount.presets);
+	fin>>buff;
 	while(fin >> buff)
 	{
 		if(buff=="}")
@@ -350,7 +361,7 @@ void Core::load(std::string name)
 		}
 		else
 		{
-			std::cout<<"error 107";
+			std::cout<<"error 107"<<buff;
 		}
 	}
 	account=buffAccount;
