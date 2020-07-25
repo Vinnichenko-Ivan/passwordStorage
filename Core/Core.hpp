@@ -5,22 +5,22 @@ class Core
 	protected:
 		Account account;
 		void copy();
-		Interface *interface;
-	public:
-		Core(Interface *inInterface);
-		Account read();
-		std::string logo();
+		void loadPresets(std::string str,Presets &presets);
+		void saveFolder(std::ofstream &fout, Folder &folder,Presets &presetsWork);
+		void CScopy(char *a,std::string &b);
 		std::string savePassword(Presets presets,Password password,Key key);
 		std::string savePresets(const Presets &presets);
 		Password loadPassword(std::ifstream &fin, Presets &presets,Key &key);
 		Folder loadFolder(std::ifstream &fin,Presets &presetsWork);
 		Key requestKey(const auto & callable,std::string name);
-		void loadPresets(std::string str,Presets &presets);
-		void saveFolder(std::ofstream &fout, Folder &folder,Presets &presetsWork);
+		Interface *interface;
+	public:
+		std::string logo();
+		Core(Interface *inInterface);
+		Account read();
 		void write(Account in);
 		void load(std::string name);
 		void save(std::string name);
-		void CScopy(char *a,std::string &b);
 };
 
 Core::Core(Interface *inInterface)
@@ -275,6 +275,7 @@ void Core::saveFolder(std::ofstream &fout, Folder &folder,Presets &presetsWork)
 	fout<<savePresets(folder.presets)<<std::endl;
 	fout<<"{"<<std::endl;
 	if(folder.presets.presetsOn){
+		folder.presets.key=interface->callback(folder.name);
 		for(int i=0;i<folder.passwords.size();i++)
 		{
 			fout<<savePassword(folder.presets,folder.passwords[i],key)<<std::endl;
@@ -331,6 +332,10 @@ Folder Core::loadFolder(std::ifstream &fin,Presets &presetsWork)
 	}
 	fin>>buff;
 	loadPresets(buff,folder.presets);
+	if(folder.presets.presetsOn)
+	{
+		folder.presets.key=interface->callback(folder.name);
+	}
 	fin>>buff;
 	while(fin >> buff)
 	{
@@ -389,6 +394,7 @@ void Core::load(std::string name)
 	}
 	fin>>buff;
 	loadPresets(buff,buffAccount.presets);
+	buffAccount.presets.key=interface->callback("Account");
 	fin>>buff;
 	//buffAccount.presets.key=requestKey(callableF,"account");
 	while(fin >> buff)
