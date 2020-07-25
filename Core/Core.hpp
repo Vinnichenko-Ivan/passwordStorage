@@ -1,24 +1,32 @@
 #include"Account.hpp"
-#include"Key.hpp"
+#include"Interface.hpp"
 class Core
 {
 	protected:
 		Account account;
 		void copy();
+		Interface *interface;
 	public:
+		Core(Interface *inInterface);
 		Account read();
 		std::string logo();
 		std::string savePassword(Presets presets,Password password,Key key);
 		std::string savePresets(const Presets &presets);
 		Password loadPassword(std::ifstream &fin, Presets &presets,Key &key);
-		Folder loadFolder(std::ifstream &fin);
+		Folder loadFolder(std::ifstream &fin,Presets &presetsWork);
+		Key requestKey(const auto & callable,std::string name);
 		void loadPresets(std::string str,Presets &presets);
-		void saveFolder(std::ofstream &fout,const Folder &folder);
+		void saveFolder(std::ofstream &fout, Folder &folder,Presets &presetsWork);
 		void write(Account in);
 		void load(std::string name);
 		void save(std::string name);
 		void CScopy(char *a,std::string &b);
 };
+
+Core::Core(Interface *inInterface)
+{
+	interface=inInterface;
+}
 
 void Core::CScopy(char *a,std::string &b)
 {
@@ -37,6 +45,11 @@ Account Core::read()
 	return account;
 }
 
+Key requestKey(const auto & callable,std::string name)
+{
+	return callable(name);
+}
+
 void Core::copy()
 {
 
@@ -51,7 +64,7 @@ void Core::loadPresets(std::string str,Presets &presets)
 {
 	if(str[0]!='0'&&str[0]!='1'||str[1]!='0'&&str[1]!='1'||str[2]!='0'&&str[2]!='1'||str[3]!='0'&&str[3]!='1'||str[4]!='0'&&str[4]!='1'||str.size()>21||str.size()<6)
 	{
-		std::cout<<"error 101"<<std::endl;
+		std::cerr<<"error 101"<<std::endl;
 	}
 	else
 	{
@@ -208,7 +221,7 @@ Password Core::loadPassword(std::ifstream &fin, Presets &presets,Key &key)
 
 	if(strAccountNameCrypt.size()>16||strSiteCrypt.size()>16||strPasswordCrypt.size()>16||strServiseNameCrypt.size()>16)
 	{
-		std::cout<<"error 102";
+		std::cerr<<"error 102";
 	}
 	else
 	{
@@ -255,38 +268,52 @@ Password Core::loadPassword(std::ifstream &fin, Presets &presets,Key &key)
 	return password;
 }
 
-void Core::saveFolder(std::ofstream &fout,const Folder &folder)
+void Core::saveFolder(std::ofstream &fout, Folder &folder,Presets &presetsWork)
 {
 	Key key;
 	fout<<"Folder: "<<folder.name<<std::endl;
 	fout<<savePresets(folder.presets)<<std::endl;
 	fout<<"{"<<std::endl;
-	for(int i=0;i<folder.passwords.size();i++)
-	{
-		fout<<savePassword(folder.presets,folder.passwords[i],key)<<std::endl;
+	if(folder.presets.presetsOn){
+		for(int i=0;i<folder.passwords.size();i++)
+		{
+			fout<<savePassword(folder.presets,folder.passwords[i],key)<<std::endl;
+		}
+		for(int i=0;i<folder.folders.size();i++)
+		{
+			saveFolder(fout,folder.folders[i],folder.presets);
+		}
 	}
-	for(int i=0;i<folder.folders.size();i++)
+	else
 	{
-		saveFolder(fout,folder.folders[i]);
+		for(int i=0;i<folder.passwords.size();i++)
+		{
+			fout<<savePassword(presetsWork,folder.passwords[i],key)<<std::endl;
+		}
+		for(int i=0;i<folder.folders.size();i++)
+		{
+			saveFolder(fout,folder.folders[i],presetsWork);
+		}
 	}
 	fout<<"}"<<std::endl;
 }
 
 void Core::save(std::string name)
 {
+	account.presets.key=interface->callback("Account password");
 	std::ofstream fout(name);
 	fout<<account.name<<std::endl;
 	fout<<savePresets(account.presets)<<std::endl;
-	fout<<"{"<<std::endl;
+	fout<<"{"<<std::endl;	
 	for(int i=0;i<account.folders.size();i++)
 	{
-		saveFolder(fout,account.folders[i]);
+		saveFolder(fout,account.folders[i],account.presets);
 	}
 	fout<<"}"<<std::endl;
 	fout.close();
 }
 
-Folder Core::loadFolder(std::ifstream &fin)
+Folder Core::loadFolder(std::ifstream &fin,Presets &presetsWork)
 {
 	Key key;
 	Folder folder;
@@ -294,13 +321,13 @@ Folder Core::loadFolder(std::ifstream &fin)
 	fin>>buff;
 	if(buff.size()>16)
 	{
-		std::cout<<"error 105";
+		std::cerr<<"error 105 ";
 	}
 	std::copy(buff.begin(),buff.end(),folder.name);
 	fin>>buff;
 	if(buff!="Presets:")
 	{
-		std::cout<<"error 106";
+		std::cerr<<"error 106 "<<buff;
 	}
 	fin>>buff;
 	loadPresets(buff,folder.presets);
@@ -313,15 +340,29 @@ Folder Core::loadFolder(std::ifstream &fin)
 		}
 		else if(buff=="Folder:")
 		{
-			folder.folders.push_back(loadFolder(fin));
+			if(folder.presets.presetsOn)
+			{
+				folder.folders.push_back(loadFolder(fin,folder.presets));
+			}
+			else
+			{
+				folder.folders.push_back(loadFolder(fin,presetsWork));
+			}
 		}
 		else if(buff=="PassType:")
 		{
-			folder.passwords.push_back(loadPassword(fin,folder.presets,key));
+			if(folder.presets.presetsOn)
+			{
+				folder.passwords.push_back(loadPassword(fin,folder.presets,key));
+			}
+			else
+			{
+				folder.passwords.push_back(loadPassword(fin,presetsWork,key));
+			}
 		}
 		else
 		{
-			std::cout<<"error 108";
+			std::cerr<<"error 108 ";
 		}
 	}
 	return folder;
@@ -335,7 +376,7 @@ void Core::load(std::string name)
 	fin>>buff;
 	if(buff.size()>16)
 	{
-		std::cout<<"error 103";
+		std::cerr<<"error 103 ";
 	}
 	else
 	{
@@ -344,11 +385,12 @@ void Core::load(std::string name)
 	fin>>buff;
 	if(buff!="Presets:")
 	{
-		std::cout<<"error 104";
+		std::cerr<<"error 104 ";
 	}
 	fin>>buff;
 	loadPresets(buff,buffAccount.presets);
 	fin>>buff;
+	//buffAccount.presets.key=requestKey(callableF,"account");
 	while(fin >> buff)
 	{
 		if(buff=="}")
@@ -357,11 +399,11 @@ void Core::load(std::string name)
 		}
 		else if(buff=="Folder:")
 		{
-			buffAccount.addFolder(loadFolder(fin));
+			buffAccount.addFolder(loadFolder(fin,buffAccount.presets));
 		}
 		else
 		{
-			std::cout<<"error 107"<<buff;
+			std::cerr<<"error 107 "<<buff;
 		}
 	}
 	account=buffAccount;

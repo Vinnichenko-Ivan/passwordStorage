@@ -1,3 +1,4 @@
+#include"Key.hpp"
 struct Presets
 {
 	bool presetsOn=1;
@@ -6,5 +7,6 @@ struct Presets
 	bool password=0;
 	bool serviceName=0;
 	char typeCrypto[16]="default";
+	Key key;
 };
 
